@@ -4,6 +4,8 @@ import (
 	"image/color"
 	"time"
 
+	"machine"
+
 	"github.com/aykevl/ledsgo"
 )
 
@@ -11,7 +13,22 @@ const (
 	size = 32
 )
 
+var (
+	uart = machine.UART0
+	bt = machine.UART1
+	tx   = machine.UART_TX_PIN
+	rx   = machine.UART_RX_PIN
+)
+
 func main() {
+
+	uart.Configure(machine.UARTConfig{TX: machine.USBCDC_DM_PIN, RX: machine.USBCDC_DP_PIN})
+	bt.Configure(machine.UARTConfig{TX: tx, RX: rx, BaudRate:9600})
+	uart.Write([]byte("Echo console enabled. Type something then press enter:\r\n"))
+
+	pacmanGame()
+
+
 	fullRefreshes := uint(0)
 	previousSecond := int64(0)
 	//demo := colorCoordinateAt

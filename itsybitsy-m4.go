@@ -18,5 +18,5 @@ var display = hub75.New(hub75.Config{
 	C:            machine.D11,
 	D:            machine.D12,
 	NumScreens:   6,
-	Brightness:   2,
+	Brightness:   100,
 })
