@@ -49,7 +49,7 @@ func pacmanGame() {
 	var x, y int16
 	t := time.Now()
 	for {
-		display.FillScreen(color.RGBA{0, 0, 0, 255})
+		//display.FillScreen(color.RGBA{0, 0, 0, 255})
 
 		drawWalls()
 		drawPills()
@@ -85,7 +85,7 @@ func pacmanCoords(x, y int16, panel uint8) (int16, int16) {
 }
 
 func getInput() {
-	if bt.Buffered() > 0 || uart.Buffered() > 0 {
+	/*if bt.Buffered() > 0 || uart.Buffered() > 0 {
 		var d int16
 		var data byte
 		for bt.Buffered() > 0 {
@@ -120,7 +120,7 @@ func getInput() {
 		if movePacman(d) {
 			return
 		}
-	}
+	}*/
 	movePacman(pacman.d)
 }
 
@@ -237,7 +237,7 @@ func movePacman(d int16) bool {
 	if o := changeDirection(pacman.p, p); o > 0 {
 		println("CHANGE DIRECTION", pacman.d, d, o, directionMod)
 		d -= o
-		if d <0 {
+		if d < 0 {
 			d += 4
 		}
 	}

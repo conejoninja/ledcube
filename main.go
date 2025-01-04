@@ -4,8 +4,6 @@ import (
 	"image/color"
 	"time"
 
-	"machine"
-
 	"github.com/aykevl/ledsgo"
 )
 
@@ -13,21 +11,21 @@ const (
 	size = 32
 )
 
+/*
 var (
-	uart = machine.UART0
-	bt = machine.UART1
+	uart = machine.UART1
+	bt   = machine.UART2
 	tx   = machine.UART_TX_PIN
 	rx   = machine.UART_RX_PIN
-)
+)*/
 
 func main() {
 
-	uart.Configure(machine.UARTConfig{TX: machine.USBCDC_DM_PIN, RX: machine.USBCDC_DP_PIN})
-	bt.Configure(machine.UARTConfig{TX: tx, RX: rx, BaudRate:9600})
-	uart.Write([]byte("Echo console enabled. Type something then press enter:\r\n"))
+	//uart.Configure(machine.UARTConfig{TX: machine.USBCDC_DM_PIN, RX: machine.USBCDC_DP_PIN})
+	//bt.Configure(machine.UARTConfig{TX: tx, RX: rx, BaudRate: 9600})
+	//uart.Write([]byte("Echo console enabled. Type something then press enter:\r\n"))
 
-	pacmanGame()
-
+	//pacmanGame()
 
 	fullRefreshes := uint(0)
 	previousSecond := int64(0)
@@ -77,7 +75,7 @@ func noiseAt(x, y, z int, t time.Time) color.RGBA {
 		spread = 4096 / size // higher means the noise gets more detailed
 		speed  = 20          // higher means slower
 	)
-	hue := uint16(ledsgo.Noise4(int32(t.UnixNano()>>speed), int32(x*spread), int32(y*spread), int32(z*spread))) * 2
+	hue := uint16(ledsgo.Noise4(uint32(t.UnixNano()>>speed), uint32(x*spread), uint32(y*spread), uint32(z*spread))) * 2
 	return ledsgo.Color{hue, 0xff, 0xff}.Spectrum()
 }
 
@@ -91,8 +89,8 @@ func fireAt(x, y, z int, t time.Time) color.RGBA {
 	if z == 0 {
 		return color.RGBA{}
 	}
-	heat := ledsgo.Noise3(int32((31-z)*detail)-int32((t.UnixNano()>>20)*speed), int32(x*detail), int32(y*detail))/32 + (128 * 8)
-	heat -= int16(screenHeight-z) * cooling
+	heat := ledsgo.Noise3(uint32((31-z)*detail)-uint32((t.UnixNano()>>20)*speed), uint32(x*detail), uint32(y*detail))/32 + (128 * 8)
+	heat -= uint16(screenHeight-z) * cooling
 	if heat < 0 {
 		heat = 0
 	}
@@ -101,7 +99,7 @@ func fireAt(x, y, z int, t time.Time) color.RGBA {
 
 // heatMap maps a color in the range 0..2047 to a color in a heat index. Useful
 // for making flames.
-func heatMap(index int16) color.RGBA {
+func heatMap(index uint16) color.RGBA {
 	if index < 128*8 {
 		// red only
 		return color.RGBA{uint8(index / 4), 0, 0, 255}
@@ -130,7 +128,7 @@ func radiance(x, y, z int, now time.Time) color.RGBA {
 	px := (x * (8192 / size)) - 4224         // .8
 	py := (y * (8192 / size)) - 4224         // .8
 	distance := ledsgo.Sqrt((px*px + py*py)) // .8
-	hue := uint16(ledsgo.Noise1(int32(distance>>0)-int32(now.UnixNano()>>18))) + 0x8000
+	hue := uint16(ledsgo.Noise1(uint32(distance>>0)-uint32(now.UnixNano()>>18))) + 0x8000
 	return ledsgo.Color{hue, 0xff, 0xff}.Spectrum()
 }
 
@@ -153,7 +151,7 @@ func hyperspace(x, y, z int, now time.Time) color.RGBA {
 	// the outer circle of the cylinder. The cylinder moves through 3D
 	// space in the direction of one of the flat sides of the cylinder
 	// (the third coordinate).
-	alpha := int(ledsgo.Noise3(int32(px), int32(py), int32(distance/4)-int32(now.UnixNano()>>16)))
+	alpha := int(ledsgo.Noise3(uint32(px), uint32(py), uint32(distance/4)-uint32(now.UnixNano()>>16)))
 	alpha -= 10000
 	if alpha < 0 {
 		alpha = 0
