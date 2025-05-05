@@ -2,6 +2,7 @@ package main
 
 import (
 	"image/color"
+	"math/rand"
 	"time"
 
 	"github.com/aykevl/ledsgo"
@@ -27,26 +28,67 @@ func main() {
 
 	//pacmanGame()
 
-	fullRefreshes := uint(0)
+	//fullRefreshes := uint(0)
 	previousSecond := int64(0)
 	//demo := colorCoordinateAt
-	demo := noiseAt
+	//demo := noiseAt
 	//demo := fireAt
 	//demo := radiance
 	//demo := hyperspace
+	demoSeconds := 0
+	demoF := 0
+	var funcs [6]func(x, y, z int, t time.Time) color.RGBA
+	funcs[0] = noiseAt
+	funcs[1] = fireAt
+	funcs[2] = radiance
+	funcs[3] = hyperspace
+	funcs[4] = colorCoordinateAt
+	funcs[5] = noiseAt
+	demo := funcs[demoF]
+	resetGame()
 	for {
 		start := time.Now()
-		drawPixels(start, demo)
-		display.Display()
+		if demoF != 5 {
+			drawPixels(start, demo)
+			display.Display()
+		} else {
+			drawPills()
+			drawWalls()
+
+			d := pacman.d - 1 + int16(rand.Int31n(3))
+			if d < 0 {
+				d += 4
+			}
+			d = d % 4
+			movePacman(d)
+
+			x, y := pacmanCoords(pacman.x, pacman.y, pacman.p)
+			display.SetPixel(x, y, color.RGBA{255, 255, 0, 255})
+
+			display.Display()
+
+		}
 
 		second := (start.UnixNano() / int64(time.Second))
 		if second != previousSecond {
 			previousSecond = second
-			newFullRefreshes := getFullRefreshes()
-			animationTime := time.Since(start)
-			animationFPS := int64(10 * time.Second / animationTime)
-			print("#", second, " screen=", newFullRefreshes-fullRefreshes, "fps animation=", animationTime.String(), "/", (animationFPS / 10), ".", animationFPS%10, "fps\r\n")
-			fullRefreshes = newFullRefreshes
+
+			//newFullRefreshes := getFullRefreshes()
+			//animationTime := time.Since(start)
+			//animationFPS := int64(10 * time.Second / animationTime)
+			//print("#", second, " screen=", newFullRefreshes-fullRefreshes, "fps animation=", animationTime.String(), "/", (animationFPS / 10), ".", animationFPS%10, "fps\r\n")
+			//fullRefreshes = newFullRefreshes
+			demoSeconds++
+			if demoSeconds >= 30 {
+				demoSeconds = 0
+				demoF++
+				if demoF >= 6 {
+					demoF = 0
+				} else if demoF == 5 {
+					resetGame()
+				}
+				demo = funcs[demoF]
+			}
 		}
 	}
 }
